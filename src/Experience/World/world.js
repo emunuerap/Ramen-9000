@@ -213,6 +213,29 @@ lanternNames.forEach(name => {
     const controls = this.experience.camera.controls;
     controls.target.set(0, 0, 0);
     controls.update();
+    this.manoGirando = false;
+    window.addEventListener('click', (event) => {
+      // Normaliza coordenadas del mouse (entre -1 y 1)
+      this.mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+      this.mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+    
+      this.raycaster.setFromCamera(this.mouse, this.experience.camera.instance);
+    
+      const intersects = this.raycaster.intersectObject(this.mano, true);
+      if (intersects.length > 0) {
+        if (!this.manoGirando) {
+          this.manoGirando = true;
+          gsap.to(this.mano.rotation, {
+            z: this.mano.rotation.z - Math.PI * 2,
+            duration: 3,
+            ease: 'power2.inOut',
+            onComplete: () => {
+              this.manoGirando = false;
+            }
+          });
+        }
+      }
+    });
   }
 
   createHUDPlane() {
@@ -411,6 +434,8 @@ lanternNames.forEach(name => {
       }
     });
 
+    
+
     this.experience.camera.animateToPosition(
       new THREE.Vector3(10, 1, -10),
       new THREE.Vector3(0, 1.2, 0),
@@ -448,7 +473,7 @@ this.scene.traverse(obj => {
       this.ingredientHUDMesh.lookAt(this.experience.camera.instance.position);
     }
 
-    if (this.mano) {
+    if (this.mano && !this.manoGirando) {
       this.mano.rotation.z = Math.sin(elapsed * 2) * 0.8;
     }
 
