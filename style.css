@@ -1,0 +1,133 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body, html {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background: #0d0d0d;
+}
+
+canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+  pointer-events: auto;
+}
+/* Loader general */
+#loader {
+  position: fixed;
+  inset: 0;
+  background: #0d0d0d;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
+}
+
+/* Contenedor visual de la animación y la barra */
+#loading-visual {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* Imagen de ramen animada */
+#loader-image {
+  width: 200px;
+  margin-bottom: 20px;
+  animation: float 2s ease-in-out infinite;
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+}
+
+/* Contenedor de la barra de carga */
+#loader-bar-container {
+  width: 80%;
+  height: 12px;
+  background: #333;
+  border-radius: 6px;
+  overflow: hidden;
+  margin-bottom: 10px;
+}
+
+/* Barra de progreso */
+#loader-bar-fill {
+  height: 100%;
+  width: 0%;
+  background: linear-gradient(to right, #ff4d6d, #ff94a6);
+  transition: width 0.3s ease;
+}
+
+/* Porcentaje de carga */
+#loading-percent {
+  color: white;
+  margin-top: 6px;
+  font-family: 'Zen Dots', sans-serif;
+  font-size: 1rem;
+}
+
+/* Pantalla de inicio con botón */
+#start-screen {
+  text-align: center;
+  animation: fadeIn 1s ease-in-out;
+  display: none;
+}
+
+/* Texto de bienvenida */
+#start-screen h1 {
+  color: white;
+  font-family: 'Zen Dots', sans-serif;
+  font-size: 2rem;
+  margin-bottom: 20px;
+}
+
+/* Botón "Start Experience" */
+#start-btn {
+  margin-top: 40px;
+  padding: 16px 32px;
+  font-size: 1.5rem;
+  font-family: 'Zen Dots', 'Orbitron', sans-serif;
+  color: #f8f8f8;
+  background: linear-gradient(145deg, #d1004c, #ff376f);
+  border: none;
+  border-radius: 12px;
+  box-shadow: 0 0 20px #ff376f80;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+}
+
+#start-btn:hover {
+  background: linear-gradient(145deg, #ff4f6f, #ff7a92);
+  box-shadow: 0 0 25px #ff376fcc;
+  transform: scale(1.05);
+}
+
+/* Animación de entrada */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+#start-screen {
+  opacity: 0;
+  transform: scale(0.95);
+  animation: fadeZoomIn 1s ease forwards;
+}
+
+@keyframes fadeZoomIn {
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+

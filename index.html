@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Interactive Sushi & Ramen</title>
+  <link rel="stylesheet" href="/style.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Zen+Dots&family=Orbitron:wght@500&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP&display=swap" rel="stylesheet">
+<audio id="boiling-sound" src="/assets/boiling-water.mp3" loop></audio>
+  <audio id="ambience-sound" src="/assets/japanese-restaurant.wav" loop></audio>
+  <audio id="click-sound" src="/assets/click.mp3" preload="auto"></audio>
+  <audio id="transition-sound" src="/assets/transition.mp3" preload="auto"></audio>
+<audio id="arrival-sound" src="/assets/arrival.mp3" preload="auto"></audio>
+<script type="module" src="/src/script.js"></script>
+
+
+
+</head>
+<body>
+  <canvas id="webgl"></canvas>
+  <div id="loader">
+  <div id="loading-visual">
+    <img src="/assets/ramen-bowl.gif" id="loader-image" alt="Ramen loading" />
+    <div id="loader-bar-container">
+      <div id="loader-bar-fill"></div>
+    </div>
+    <p id="loading-percent">0%</p>
+  </div>
+
+  <div id="start-screen" style="display: none;">
+    <h1>ようこそ (Bienvenido/a)</h1>
+    <button id="start-btn">Start Experience</button>
+  </div>
+</div>
+
+  
+  <h1 style="color: white; font-family: 'Zen Dots', sans-serif; font-size: 2rem; margin-top: 20px;">
+    ようこそ (Bienvenido/a)
+  </h1>
+  
+</div>
+
+
+ 
+
+  
+
+</body>
+</html>
