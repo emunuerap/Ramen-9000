@@ -140,6 +140,7 @@ const lanternNames = [
 
 const shellColor = 0xff88a8;
 const glowColor = 0xff5f8e;
+const secondColor = 0x0000FF;
 
 lanternNames.forEach(name => {
   const lantern = model.getObjectByName(name);
@@ -168,6 +169,7 @@ lanternNames.forEach(name => {
 
   // Añadir luz puntual
   const point = new THREE.PointLight(glowColor, 3.5, 2.5, 1);
+  point.name = 'pointLight';
   point.position.set(0, 0, 0);
   point.castShadow = true;
   point.shadow.mapSize.width = 512;
@@ -235,6 +237,24 @@ lanternNames.forEach(name => {
           });
         }
       }
+      lanternNames.forEach(name => {
+        const lantern = this.modelGroup.getObjectByName(name);
+        if (!lantern?.isMesh) return;
+    
+        const intersects = this.raycaster.intersectObject(lantern);
+        if (intersects.length > 0) {
+          // Cambiar el color de la luz a verde cuando se haga clic en el farol
+          const pointLight = lantern.getObjectByName('pointLight');
+          if (pointLight) {
+            if (pointLight.color.getHex() === glowColor) {
+              pointLight.color.set(secondColor);
+            } else {
+              pointLight.color.set(glowColor);
+            }
+            console.log(`✅ Farol ${name} clickeado, color de luz cambiado a ${pointLight.color}`);
+          }
+        }
+      });
     });
   }
 
