@@ -45,6 +45,8 @@ const progressInterval = setInterval(() => {
     fill.style.width = `100%`;
     percentText.innerText = `100%`;
 
+    const boilingSound = document.getElementById('boiling-sound');
+     if (boilingSound) boilingSound.pause();
      
     // Tras un breve delay, ocultamos loader y mostramos botón
     setTimeout(() => {

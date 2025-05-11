@@ -7,7 +7,6 @@ import Resources from './Utils/resources.js';
 import sources from './sources.js';
 import World from './World/world.js';
 import Environment from './World/environment.js';
-console.log('Versión de Three.js:', THREE.REVISION);
 
 export default class Experience {
   constructor(canvas) {
