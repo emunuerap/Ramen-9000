@@ -5,7 +5,7 @@ export function createUOCText({ uocSign, camera, raycaster, canvas, scene }) {
   // 1) Cargar el logo de la UOC
   const textureLoader = new THREE.TextureLoader();
   const logoTexture = textureLoader.load(
-    '../../../public/assets/logo_uoc.jpg',
+    '/assets/logo_uoc.jpg',
     () => {
       console.log('Logo de la UOC cargado correctamente');
     },
