@@ -62,12 +62,19 @@ export default function createIngredientHUD(backButtonArea) {
     const lines = [
       '🍜 Ingredientes del Ramen',
       '',
+      '',
       '- Fideos de trigo',
+      '',
       '- Caldo de cerdo (tonkotsu)',
+      '',
       '- Chashu (cerdo asado)',
+      '',
       '- Huevo marinado',
+      '',
       '- Cebolleta picada',
+      '',
       '- Algas nori',
+      '',
       '- Bambú fermentado'
     ];
     const lineHeight = 42;
