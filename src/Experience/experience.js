@@ -22,6 +22,8 @@ export default class Experience {
     sun.castShadow = true;
     this.scene.add(sun);
 
+    
+
     this.sizes = new Sizes();
     this.time = new Time();
     this.camera = new Camera(this);

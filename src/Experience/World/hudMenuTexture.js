@@ -70,11 +70,23 @@ export default function createMenuTexture(buttonRef) {
   ctx.textAlign = 'right';
   ctx.fillText(backText, backX, backY);
 
+  // Calcular el ancho real del texto
+  const textWidth = ctx.measureText(backText).width;
+
   // Botón área clicable
-  buttonRef.x = backX;
-  buttonRef.y = backY - 30;
-  buttonRef.width = 180;
-  buttonRef.height = 50;
+  buttonRef.x = backX - textWidth / 2; // Centramos el área en el texto, pero ajustamos para que comience desde el inicio
+  buttonRef.y = backY - 30; // Mantener la misma posición en Y
+  buttonRef.width = textWidth + 20; // Añadimos un pequeño margen para facilitar el clic
+  buttonRef.height = 50; // Mantenemos la altura
+
+  // Logs para depuración
+  console.log('Área del botón Volver:', {
+    x: buttonRef.x,
+    y: buttonRef.y,
+    width: buttonRef.width,
+    height: buttonRef.height,
+    textWidth: textWidth
+  });
 
   const texture = new THREE.CanvasTexture(canvas);
   texture.minFilter = THREE.LinearFilter;

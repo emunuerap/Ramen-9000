@@ -9,6 +9,7 @@ export default function createHologramMaterial() {
     transparent: true,
     uniforms: {
       uTime: { value: 0.0 },
+      uOpacity: { value: 0.8 } // Opacidad inicial
     },
     depthWrite: false,
     blending: THREE.AdditiveBlending,

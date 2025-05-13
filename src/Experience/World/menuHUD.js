@@ -21,7 +21,8 @@ export default function createMenuHUD(buttonRef = {}) {
   const mesh = new THREE.Mesh(geometry, material);
   mesh.visible = false;
   mesh.renderOrder = 999;
-  mesh.position.set(0, 2.5, -1);
+  // Posición inicial neutra (se ajustará en animateMoveHUD)
+  mesh.position.set(0, 0, 0);
   mesh.rotation.y = Math.PI;
 
   return mesh;
