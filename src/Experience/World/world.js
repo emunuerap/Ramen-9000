@@ -106,9 +106,36 @@ export default class World {
     const lanternNames = ['Lantern_7_Red_0', 'Lantern_5_Red_0', 'Lantern_4_Red_0', 'Lantern_6_Red_0', 'Lantern_2_2_Red_0', 'Lantern_Red_0'];
     const shellColor = 0xff88a8;
     const glowColor = 0xff5f8e;
+    const secondColor = 0x00ffff;
     lanternNames.forEach(name => {
       const lantern = model.getObjectByName(name);
       if (!lantern?.isMesh) return;
+
+      window.addEventListener('click', (event) => {
+        const lanternObj = this.modelGroup.getObjectByName(name);
+        if (!lanternObj?.isMesh) return;
+    
+        const intersects = this.raycaster.intersectObject(lanternObj);
+        if (intersects.length > 0) {
+          // Cambiar el color de la luz a verde cuando se haga clic en el farol
+          const pointLight = lantern.getObjectByName('pointLight');
+          const clickSound = document.getElementById('click-sound');
+          if (clickSound) {
+            clickSound.currentTime = 0;
+            clickSound.play();
+          }
+          if (pointLight) {
+            if (pointLight.color.getHex() === glowColor) {
+              pointLight.color.set(secondColor);
+              lanternObj.material.emissive.set(secondColor);
+            } else {
+              pointLight.color.set(glowColor);
+              lanternObj.material.emissive.set(glowColor);
+            }
+            console.log(`✅ Farol ${name} clickeado, color de luz cambiado a ${pointLight.color}`);
+          }
+        }
+      });
   
       const lanternMat = new THREE.MeshPhysicalMaterial({
         color: shellColor,
@@ -131,6 +158,7 @@ export default class World {
   
       const point = new THREE.PointLight(glowColor, 4.0, 2.5, 1);
       point.position.set(0, 0, 0);
+      point.name = "pointLight";
       point.castShadow = true;
       point.shadow.mapSize.width = 512;
       point.shadow.mapSize.height = 512;
@@ -247,6 +275,33 @@ export default class World {
   
     // Otros nodos
     this.mano = model.getObjectByName('Mano_2');
+    this.manoGirando = false;
+    window.addEventListener('click', (event) => {
+      this.mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+      this.mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+    
+      this.raycaster.setFromCamera(this.mouse, this.experience.camera.instance);
+    
+      const intersects = this.raycaster.intersectObject(this.mano, true);
+      if (intersects.length > 0) {
+        if (!this.manoGirando) {
+          const clickSound = document.getElementById('click-sound');
+          if (clickSound) {
+            clickSound.currentTime = 0;
+            clickSound.play();
+          }
+          this.manoGirando = true;
+          gsap.to(this.mano.rotation, {
+            z: this.mano.rotation.z - Math.PI * 2,
+            duration: 2,
+            ease: 'power2.inOut',
+            onComplete: () => {
+              this.manoGirando = false;
+            }
+          });
+        }
+      }
+    });
     this.ramenBowlNode = model.getObjectByName('Ramen_1');
     this.woodSign = model.getObjectByName('Wood_Sign_2');
     this.woodPole1 = model.getObjectByName('Wood_Pole_2');
@@ -899,7 +954,9 @@ export default class World {
     });
     if (this.menuHUDMesh?.visible) this.menuHUDMesh.lookAt(this.experience.camera.instance.position);
     if (this.ingredientHUDMesh?.visible) this.ingredientHUDMesh.lookAt(this.experience.camera.instance.position);
-    if (this.mano) this.mano.rotation.z = Math.sin(elapsed * 2) * 0.8;
+    if (this.mano && !this.manoGirando) {
+      this.mano.rotation.z = Math.sin(elapsed * 2) * 0.8;
+    }
     if (this.ingredientHUDMesh?.visible && this.ingredientHUDMesh.updateCanvas) this.ingredientHUDMesh.updateCanvas();
   
     this.scene.traverse(obj => {
