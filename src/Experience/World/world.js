@@ -106,7 +106,7 @@ export default class World {
     const lanternNames = ['Lantern_7_Red_0', 'Lantern_5_Red_0', 'Lantern_4_Red_0', 'Lantern_6_Red_0', 'Lantern_2_2_Red_0', 'Lantern_Red_0'];
     const shellColor = 0xff88a8;
     const glowColor = 0xff5f8e;
-    const secondColor = 0x00ffff;
+    const secondColor = 0x00aaff;
     lanternNames.forEach(name => {
       const lantern = model.getObjectByName(name);
       if (!lantern?.isMesh) return;
