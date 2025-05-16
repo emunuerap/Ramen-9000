@@ -108,7 +108,7 @@ export default class World {
     const lanternNames = ['Lantern_7_Red_0', 'Lantern_5_Red_0', 'Lantern_4_Red_0', 'Lantern_6_Red_0', 'Lantern_2_2_Red_0', 'Lantern_Red_0'];
     const shellColor = 0xff88a8;
     const glowColor = 0xff5f8e;
-    const secondColor = 0x00ffff;
+    const secondColor = 0x00aaff;
     lanternNames.forEach(name => {
       const lantern = model.getObjectByName(name);
       if (!lantern?.isMesh) return;
@@ -161,6 +161,7 @@ export default class World {
       const point = new THREE.PointLight(glowColor, 4.0, 2.5, 1);
       point.name = "pointLight";
       point.position.set(0, 0, 0);
+      point.name = "pointLight";
       point.castShadow = true;
       point.shadow.mapSize.width = 512;
       point.shadow.mapSize.height = 512;
