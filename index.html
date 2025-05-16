@@ -64,9 +64,45 @@
 </div>
 
 
- 
+<button id="toggle-legend" class="toggle-legend hidden">
+  <object id="ramen-icon" class="legend-icon" type="image/svg+xml" data="public/favicon/favicon.svg">
+    <img src="public/favicon/favicon.svg" alt="Ramen Icon" />
+  </object>
+</button>
+
+<div id="legend" class="legend hidden">
+  <button id="close-legend" class="close-legend">
+    <svg id="close-icon" class="legend-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#00ffff" stroke-width="2">
+      <line x1="6" y1="6" x2="18" y2="18" stroke-linecap="round"/>
+      <line x1="6" y1="18" x2="18" y2="6" stroke-linecap="round"/>
+    </svg>
+  </button>
+  <h3>Interacciones</h3>
+  <ul>
+    <li><span class="icon">🍜</span> Haz clic en el ramen holográfico sobre el edificio para activar efectos.</li>
+    <li><span class="icon">📟</span> Conecta el panel HUD holográfico con el cuenco de ramen para más detalles.</li>
+    <li><span class="icon">🥣</span> Interactúa con el cuenco de ramen en la barra para ver los ingredientes.</li>
+    <li><span class="icon">✨</span> Haz clic en el letrero de calle para mostrar el menú de platos.</li>
+    <li><span class="icon">💡</span> Clic en el letrero de la UOC en neón para encender/apagar y mostrar su holograma.</li>
+    <li><span class="icon">🌐</span> Clic en el holograma de la UOC para visitar su web en una nueva ventana.</li>
+    <li><span class="icon">🏮</span> Clic en los faroles japoneses para cambiar su color a azul y volver al original.</li>
+    <li><span class="icon">🖐️</span> Clic en la mano animada de atrás para hacerla girar completamente.</li>
+    <li><span class="icon">🎬</span> Clic en "Start Experience" para iniciar la escena con animación de cámara.</li>
+    <li><span class="icon">🔊</span> Sonidos ambientales se activan al explorar la escena.</li>
+    <li><span class="icon">👆</span> Clic en el ícono del ramen para abrir/cerrar esta leyenda.</li>
+  </ul>
+</div>
+
+<!-- Botón de sonido (fuera de la leyenda) -->
+<button id="toggle-sound" class="sound-btn">
+  <svg id="sound-icon" class="sound-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#00ffff" stroke-width="2">
+    <path d="M11 5L6 9H2v6h4l5 4V5z" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M15.54 8.46a5 5 0 0 1 0 7.07" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M19.07 4.93a10 10 0 0 1 0 14.14" stroke-linecap="round" stroke-linejoin="round"/>
+  </svg>
+</button>
+</body>
 
   
 
-</body>
 </html>

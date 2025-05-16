@@ -9,9 +9,11 @@ export default function createHologramMaterial() {
     transparent: true,
     uniforms: {
       uTime: { value: 0.0 },
-      uOpacity: { value: 0.8 } // Opacidad inicial
+      uOpacity: { value: 0.8 }, // Opacidad inicial
+      uOpacity: { value: 0.8 }, // Opacidad inicial
+      uColor: { value: new THREE.Color(0.2, 0.6, 1.0) } // Color inicial (coincide con el baseColor inicial del fragment shader)    },
     },
-    depthWrite: false,
+      depthWrite: false,
     blending: THREE.AdditiveBlending,
   });
 }

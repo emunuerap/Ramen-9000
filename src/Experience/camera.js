@@ -16,12 +16,12 @@ export default class Camera {
 
   setInstance() {
     this.instance = new THREE.PerspectiveCamera(
-      45,
+      40,
       this.sizes.width / this.sizes.height,
       0.1,
       100
     );
-    this.instance.position.set(10, 1, -10); // posición inicial cinematográfica
+    this.instance.position.set(10, 2, -10); // posición inicial cinematográfica
     this.scene.add(this.instance);
   }
 

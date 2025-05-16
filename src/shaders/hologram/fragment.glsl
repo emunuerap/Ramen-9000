@@ -3,17 +3,14 @@ varying float vDistortion;
 
 uniform float uTime;
 uniform float uOpacity; // Uniform para controlar la opacidad
+uniform vec3 uColor; // Uniforme para el color base
 
 void main() {
   // Suavizar la animación con una onda en vertical
   float wave = sin(vUv.y * 8.0 + uTime * 0.5); // Reducimos la frecuencia de 10.0 a 8.0 para suavizar
 
-  // Colores con mayor contraste en degradado animado
-  vec3 baseColor = vec3(
-    0.2 + 0.5 * sin(uTime + vUv.y * 2.0), // Aumentamos el rango para más contraste
-    0.6 + 0.4 * sin(uTime + vUv.y * 2.0 + 2.0),
-    1.0
-  );
+  // Usar el color uniforme en lugar de calcular baseColor
+  vec3 baseColor = uColor;
 
   float glow = 0.5 + 0.5 * smoothstep(0.0, 1.0, wave); // Ajustamos el brillo base a 0.5
 

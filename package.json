@@ -1,1 +1,1 @@
-{"name":"test","version":"1.0.0","scripts":{"dev":"vite"},"devDependencies":{"vite":"^6.3.0","vite-plugin-glsl":"^1.4.1"},"dependencies":{"gsap":"^3.12.7","three":"^0.176.0","three-stdlib":"^2.36.0"}}
+{"name":"test","version":"1.0.0","scripts":{"dev":"vite"},"devDependencies":{"vite":"^6.3.0","vite-plugin-glsl":"^1.4.1"},"dependencies":{"ammo.js":"^0.0.10","gsap":"^3.12.7","three":"^0.176.0","three-stdlib":"^2.36.0"}}

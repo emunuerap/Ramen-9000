@@ -10,9 +10,10 @@ import createMenuHUD from './menuHUD.js';
 import createIngredientHUD from './ingredientHUD.js';
 
 const BLOOM_LAYER = 1;
-const uocColor = 0x00ffff; // color azul holográfico de la UOC
+const uocColor = 0x00ffff; // Color azul holográfico de la UOC
 
 export default class World {
+  // Inicialización de la clase World, configurando referencias a la experiencia, escena, renderizador y elementos clave como HUD y holograma
   constructor(experience) {
     this.experience = experience;
     this.scene = experience.scene;
@@ -22,30 +23,29 @@ export default class World {
     this.rotationAnimation = null; // Para almacenar la animación de rotación
     this.connectionLine = null; // Para la línea holográfica
 
-    // Setup environment (HDRI)
+    // Configuración del entorno con HDRI
     this.environment = new Environment(experience);
 
-    // HUD
+    // Creación del HUD y su plano en la escena
     this.hud = createHUDTexture();
     this.createHUDPlane();
 
-    // Group for model
+    // Grupo para organizar el modelo 3D
     this.modelGroup = new THREE.Group();
     this.scene.add(this.modelGroup);
 
-    // Raycaster
+    // Configuración del raycaster para interacciones
     this.raycaster = new THREE.Raycaster();
 
-    // Load and setup model
+    // Carga y configuración inicial del modelo
     this.setupModel();
 
-    // Hologram
+    // Configuración del holograma con su material y luz dinámica
     this.hologramClock = new THREE.Clock();
     this.hologramParts = [];
     this.addHologramMesh();
 
-    // Menu HUDs
-    // Eliminamos createMenuNode() porque ya no usaremos la esfera
+    // Configuración de los HUDs de menú e ingredientes, inicialmente ocultos
     this.menuHUDMesh = createMenuHUD(this.backButtonArea = {});
     this.menuHUDMesh.visible = false;
     this.menuHUDMesh.material.opacity = 0;
@@ -61,11 +61,12 @@ export default class World {
     window.addEventListener('mousemove', this.onMouseMove.bind(this));
   }
 
+  // Configuración del modelo 3D, incluyendo escalado, reflector del suelo, faroles con luces, letrero UOC y efectos de ramen
   setupModel() {
     const model = this.experience.resources.items.sushiRamenModel?.scene;
     if (!model) return;
   
-    // Escalado y centrado
+    // Ajuste de escala y centrado del modelo
     const box = new THREE.Box3().setFromObject(model);
     const size = new THREE.Vector3();
     const center = new THREE.Vector3();
@@ -76,7 +77,7 @@ export default class World {
     model.position.sub(center.multiplyScalar(scale));
     this.modelGroup.add(model);
   
-    // Crear reflector
+    // Creación de un reflector para simular un suelo reflectante
     const ground = model.getObjectByName('Ground_Grey_0');
     if (ground?.isMesh) {
       const groundGeometry = new THREE.PlaneGeometry(5, 5);
@@ -101,23 +102,51 @@ export default class World {
       this.groundReflector.material.transparent = true;
       this.scene.add(this.groundReflector);
     }
-  
-    // Faroles
+ 
+    
+    // Configuración de faroles con materiales y luces dinámicas
     const lanternNames = ['Lantern_7_Red_0', 'Lantern_5_Red_0', 'Lantern_4_Red_0', 'Lantern_6_Red_0', 'Lantern_2_2_Red_0', 'Lantern_Red_0'];
     const shellColor = 0xff88a8;
     const glowColor = 0xff5f8e;
+    const secondColor = 0x00ffff;
     lanternNames.forEach(name => {
       const lantern = model.getObjectByName(name);
       if (!lantern?.isMesh) return;
+
+      window.addEventListener('click', (event) => {
+        const lanternObj = this.modelGroup.getObjectByName(name);
+        if (!lanternObj?.isMesh) return;
+    
+        const intersects = this.raycaster.intersectObject(lanternObj);
+        if (intersects.length > 0) {
+          // Cambiar el color de la luz a verde cuando se haga clic en el farol
+          const pointLight = lantern.getObjectByName('pointLight');
+          const clickSound = document.getElementById('click-sound');
+          if (clickSound) {
+            clickSound.currentTime = 0;
+            clickSound.play();
+          }
+          if (pointLight) {
+            if (pointLight.color.getHex() === glowColor) {
+              pointLight.color.set(secondColor);
+              lanternObj.material.emissive.set(secondColor);
+            } else {
+              pointLight.color.set(glowColor);
+              lanternObj.material.emissive.set(glowColor);
+            }
+            console.log(`✅ Farol ${name} clickeado, color de luz cambiado a ${pointLight.color}`);
+          }
+        }
+      });
   
       const lanternMat = new THREE.MeshPhysicalMaterial({
         color: shellColor,
         roughness: 0.3,
         metalness: 0,
         transmission: 0.1,
-        thickness: 0.1,
+        thickness: 0.5,
         emissive: glowColor,
-        emissiveIntensity: 2.5,
+        emissiveIntensity: 2,
         envMapIntensity: 0.5,
         transparent: false
       });
@@ -130,6 +159,7 @@ export default class World {
       lantern.material = lanternMat;
   
       const point = new THREE.PointLight(glowColor, 4.0, 2.5, 1);
+      point.name = "pointLight";
       point.position.set(0, 0, 0);
       point.castShadow = true;
       point.shadow.mapSize.width = 512;
@@ -140,7 +170,7 @@ export default class World {
       point.layers.enable(0);
       lantern.add(point);
   
-      // Usar MeshStandardMaterial para el núcleo
+      // Creación de un núcleo brillante para los faroles
       const core = new THREE.Mesh(
         new THREE.SphereGeometry(0.025, 12, 12),
         new THREE.MeshStandardMaterial({
@@ -175,7 +205,7 @@ export default class World {
       lantern.layers.enable(0);
     });
   
-    // UOC_Sign
+    // Configuración del letrero UOC con material holográfico y efectos de interacción
     const uocSign = model.getObjectByName('UOC_Sign');
     if (!uocSign?.isMesh) {
       console.warn('⚠️ UOC_Sign no encontrado');
@@ -242,20 +272,46 @@ export default class World {
       });
     }
   
-    // Efectos Ramen
+    // Aplicación de efectos visuales al ramen
     setupRamenEffects(model, BLOOM_LAYER);
   
-    // Otros nodos
+    // Asignación de referencias a objetos interactivos
     this.mano = model.getObjectByName('Mano_2');
+    this.manoGirando = false;
+    window.addEventListener('click', (event) => {
+      this.mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+      this.mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+    
+      this.raycaster.setFromCamera(this.mouse, this.experience.camera.instance);
+    
+      const intersects = this.raycaster.intersectObject(this.mano, true);
+      if (intersects.length > 0) {
+        if (!this.manoGirando) {
+          const clickSound = document.getElementById('click-sound');
+          if (clickSound) {
+            clickSound.currentTime = 0;
+            clickSound.play();
+          }
+          this.manoGirando = true;
+          gsap.to(this.mano.rotation, {
+            z: this.mano.rotation.z - Math.PI * 2,
+            duration: 2,
+            ease: 'power2.inOut',
+            onComplete: () => {
+              this.manoGirando = false;
+            }
+          });
+        }
+      }
+    });
     this.ramenBowlNode = model.getObjectByName('Ramen_1');
-    this.woodSign = model.getObjectByName('Wood_Sign_2');
-    this.woodPole1 = model.getObjectByName('Wood_Pole_2');
-    this.woodPole2 = model.getObjectByName('Wood_Pole_1_2');
+    this.floorSign = model.getObjectByName('Floor_Sign');
     const controls = this.experience.camera.controls;
     controls.target.set(0, 0, 0);
     controls.update();
   }
 
+  // Manejo del movimiento del ratón para detectar hover sobre elementos interactivos
   onMouseMove(event) {
     this.mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
     this.mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
@@ -277,12 +333,13 @@ export default class World {
     this.experience.camera.controls.dampingFactor = isAnyHovered ? 0.3 : 0.95;
   }
 
+  // Gestión de clics en diferentes elementos de la escena (HUD, ramen, letreros, holograma)
   onMouseClick(event) {
     this.mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
     this.mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
     this.raycaster.setFromCamera(this.mouse, this.experience.camera.instance);
   
-    // Verificar clics en HUDs
+    // Detección de clics en los HUDs de menú o ingredientes
     if (this.menuHUDMesh.visible || this.ingredientHUDMesh.visible) {
       const hudMesh = this.menuHUDMesh.visible ? this.menuHUDMesh : this.ingredientHUDMesh;
       const intersects = this.raycaster.intersectObject(hudMesh);
@@ -292,7 +349,7 @@ export default class World {
       }
     }
   
-    // Verificar clics en elementos del ramen
+    // Detección de clics en elementos del ramen
     const ramenElements = [
       this.modelGroup.getObjectByName('Ramen_Black_0'),
       this.modelGroup.getObjectByName('Fideo_Black_0'),
@@ -304,16 +361,18 @@ export default class World {
       return;
     }
   
-    // Verificar clics en el letrero (Wood_Sign_2, Wood_Pole_2, Wood_Pole_1_2)
-    const signObjects = [this.woodSign, this.woodPole1, this.woodPole2].filter(Boolean);
-    const signIntersects = this.raycaster.intersectObjects(signObjects);
-    if (signIntersects.length > 0) {
-      console.log('Clic detectado en letrero');
-      this.moveCameraToMenu();
-      return;
+    // Detección de clics en el letrero (Wood_Sign_2, Wood_Pole_2, Wood_Pole_1_2)
+    if (this.floorSign) {
+      const signIntersects = this.raycaster.intersectObject(this.floorSign, true); // con `true` detecta hijos
+      if (signIntersects.length > 0) {
+        console.log('Clic detectado en Floor_Sign');
+        this.moveCameraToMenu();
+        return;
+      }
     }
+    
   
-    // Verificar clics en el ramen bowl para ingredientes
+    // Detección de clics en el ramen bowl para mostrar ingredientes
     if (this.ramenBowlNode && !this.menuHUDMesh.visible && !this.ingredientHUDMesh.visible) {
       const ramenIntersects = this.raycaster.intersectObject(this.ramenBowlNode, true);
       if (ramenIntersects.length > 0) {
@@ -322,27 +381,28 @@ export default class World {
       }
     }
   
-    // Verificar clics en el hologramBowl
+    // Detección de clics en el holograma
     if (this.hologramBase) {
       const hologramIntersects = this.raycaster.intersectObjects(this.hologramBase.children, true);
       if (hologramIntersects.length > 0) {
         console.log('Clic detectado en hologramBowl');
-        this.handleHologramClick(hologramIntersects[0].object); // Aseguramos que se llame al método
+        this.handleHologramClick(hologramIntersects[0].object);
         return;
       }
     }
 
-    // Verificar clics en el hudMesh
-  if (this.hudMesh) {
-    const hudIntersects = this.raycaster.intersectObject(this.hudMesh);
-    if (hudIntersects.length > 0) {
-      console.log('Clic detectado en hudMesh');
-      this.handleHUDMeshClick();
-      return;
+    // Detección de clics en el HUD general
+    if (this.hudMesh) {
+      const hudIntersects = this.raycaster.intersectObject(this.hudMesh);
+      if (hudIntersects.length > 0) {
+        console.log('Clic detectado en hudMesh');
+        this.handleHUDMeshClick();
+        return;
+      }
     }
   }
-  }
 
+  // Manejo de clics en el holograma con efectos de partículas y animación de rotación
   handleHologramClick(mesh) {
     const clickSound = document.getElementById('click-sound');
     if (clickSound) {
@@ -350,23 +410,20 @@ export default class World {
       clickSound.play();
     }
   
-    // Detener cualquier animación previa de velocidad
     if (this.rotationAnimation) {
       this.rotationAnimation.kill();
     }
   
-    // Acelerar la rotación temporalmente
-    this.hologramRotationSpeed = 0.05; // Velocidad máxima al hacer clic
+    this.hologramRotationSpeed = 0.05;
     this.rotationAnimation = gsap.to(this, {
-      hologramRotationSpeed: 0.005, // Volver a la velocidad inicial
-      duration: 3, // 3 segundos para volver a la velocidad normal
+      hologramRotationSpeed: 0.005,
+      duration: 3,
       ease: "power2.out",
       onUpdate: () => {
         this.hologramBase.rotation.z += this.hologramRotationSpeed;
       }
     });
   
-    // Crear partículas
     const particleCount = 10;
     const particleGeometry = new THREE.SphereGeometry(0.02, 8, 8);
     const particleMaterial = new THREE.MeshBasicMaterial({
@@ -398,6 +455,8 @@ export default class World {
       });
     }
   }
+
+  // Manejo de clics en el HUD general con efectos de conexión y transición
   handleHUDMeshClick() {
     const clickSound = document.getElementById('click-sound');
     if (clickSound) {
@@ -405,17 +464,14 @@ export default class World {
       clickSound.play();
     }
   
-    // Activar estado de conexión
     if (this.hud && this.hologramBase) {
       this.hud.isConnected = true;
-      this.hud.scannerSpeed = 4; // Acelerar escáner
-      this.hud.startTime = this.hologramClock.getElapsedTime(); // Reiniciar tiempo
-      this.hud.typedLengths = [0, 0, 0, 0]; // Reiniciar escritura progresiva
-      this.hud.lineDelays = [0, 0.3, 0.6, 0.8]; // Retrasos
-      this.hud.needsUpdate = true; // Forzar actualización
+      this.hud.scannerSpeed = 4;
+      this.hud.startTime = this.hologramClock.getElapsedTime();
+      this.hud.typedLengths = [0, 0, 0, 0];
+      this.hud.lineDelays = [0, 0.3, 0.6, 0.8];
+      this.hud.needsUpdate = true;
   
-  
-      // Establecer las líneas de conexión
       this.hud.lines = [
         'CONEXION INICIADA',
         'Scan: ',
@@ -423,14 +479,12 @@ export default class World {
         'Estado: Activa'
       ];
   
-      // Reproducir sonido de conexión
       const connectSound = document.getElementById('connect-sound');
       if (connectSound) {
         connectSound.currentTime = 0;
         connectSound.play();
       }
   
-      // Aumentar brillo y velocidad del hologramBowl
       this.hologramParts.forEach(part => {
         gsap.to(part.material.uniforms.uOpacity, {
           value: 1.0,
@@ -442,10 +496,8 @@ export default class World {
         duration: 0.5
       });
   
-      // Crear línea holográfica
       this.createConnectionLine();
   
-      // Efecto de brillo en el HUD
       gsap.to(this.hudMesh.material, {
         opacity: 1.0,
         duration: 0.5,
@@ -453,18 +505,14 @@ export default class World {
         repeat: 1
       });
   
-      // Volver al estado normal con transición después de 5 segundos (antes era 4)
       gsap.delayedCall(5, () => {
         this.hud.isConnected = false;
         this.hud.scannerSpeed = 2;
   
-        // Depuración: Confirmar que isConnected se cambia a false
         console.log(`transitionToNormalHUD - isConnected cambiado a false, elapsedTime: ${this.hologramClock.getElapsedTime()}`);
   
-        // Efecto de desvanecimiento y transición
         this.transitionToNormalHUD();
   
-        // Restaurar velocidad y opacidad del holograma
         this.hologramParts.forEach(part => {
           gsap.to(part.material.uniforms.uOpacity, {
             value: 0.9,
@@ -477,7 +525,6 @@ export default class World {
         });
       });
   
-      // Eliminar la línea de conexión después de 6 segundos
       gsap.delayedCall(6, () => {
         if (this.connectionLine) {
           this.scene.remove(this.connectionLine);
@@ -487,46 +534,43 @@ export default class World {
     }
   }
   
+  // Transición del HUD a su estado normal con desvanecimiento y partículas
   transitionToNormalHUD() {
-    // Desvanecer opacidad del HUD
     gsap.to(this.hudMesh.material, {
       opacity: 0,
       duration: 0.5,
       onComplete: () => {
-        // Cambiar las letras a las originales y activar el efecto de escaneo
         this.hud.lines = [
           'RAMEN-9000',
           'Scan: ',
           'Proyecto 3: Aplicación Interactiva',
           'Eduardo Munuera Porlan'
         ];
-        this.hud.scanEffect = true; // Activar el escaneo horizontal
-        this.hud.scanProgress = 0;  // Reiniciar el progreso
-        this.hud.typedLengths = [0, 0, 0, 0]; // Reiniciar escritura progresiva
-        this.hud.lineDelays = [0, 0.8, 1.6, 2.4]; // Retrasos
-        this.hud.startTime = this.hologramClock.getElapsedTime(); // Reiniciar tiempo
+        this.hud.scanEffect = true;
+        this.hud.scanProgress = 0;
+        this.hud.typedLengths = [0, 0, 0, 0];
+        this.hud.lineDelays = [0, 0.8, 1.6, 2.4];
+        this.hud.startTime = this.hologramClock.getElapsedTime();
         this.hud.needsUpdate = true;
   
-        // Restaurar opacidad con transición más rápida
         gsap.to(this.hudMesh.material, {
           opacity: 0.9,
           duration: 0.7,
           ease: "power2.in",
           onComplete: () => {
-            this.hud.scanEffect = false; // Asegurar que el escaneo termine
+            this.hud.scanEffect = false;
           }
         });
   
-        // Añadir más partículas con movimiento más pronunciado
         this.addTransitionParticles();
       }
     });
   }
   
-  // Ajustar addTransitionParticles para más partículas y movimiento
+  // Generación de partículas de transición con mayor cantidad y movimiento
   addTransitionParticles() {
-    const particleCount = 30; // Aumentar a 30 partículas
-    const particleGeometry = new THREE.SphereGeometry(0.015, 8, 8); // Tamaño ligeramente mayor
+    const particleCount = 30;
+    const particleGeometry = new THREE.SphereGeometry(0.015, 8, 8);
     const particleMaterial = new THREE.MeshBasicMaterial({
       color: 0x00ffff,
       transparent: true,
@@ -536,15 +580,15 @@ export default class World {
     for (let i = 0; i < particleCount; i++) {
       const particle = new THREE.Mesh(particleGeometry, particleMaterial.clone());
       particle.position.copy(this.hudMesh.position);
-      particle.position.x += (Math.random() - 0.5) * 2.4; // Ancho del HUD
-      particle.position.y += (Math.random() - 0.5) * 0.75; // Alto del HUD
+      particle.position.x += (Math.random() - 0.5) * 2.4;
+      particle.position.y += (Math.random() - 0.5) * 0.75;
       this.scene.add(particle);
   
       gsap.to(particle.position, {
-        x: particle.position.x + (Math.random() - 0.5) * 2, // Mayor desplazamiento
-        y: particle.position.y + (Math.random() - 0.5) * 1.5, // Mayor desplazamiento
-        z: particle.position.z + (Math.random() - 0.5) * 1, // Añadir profundidad
-        duration: 1.2, // Reducir duración para movimiento más rápido
+        x: particle.position.x + (Math.random() - 0.5) * 2,
+        y: particle.position.y + (Math.random() - 0.5) * 1.5,
+        z: particle.position.z + (Math.random() - 0.5) * 1,
+        duration: 1.2,
         ease: "power2.out"
       });
       gsap.to(particle.material, {
@@ -556,18 +600,18 @@ export default class World {
     }
   }
   
+  // Creación de una línea holográfica entre el HUD y el holograma
   createConnectionLine() {
     if (this.connectionLine) this.scene.remove(this.connectionLine);
   
     const geometry = new THREE.BufferGeometry();
     const points = [];
     const hudPosition = this.hudMesh.position.clone();
-    // Bajar el inicio de la línea al borde inferior del hudMesh (y = 2.125) o más abajo (y = 1.8)
     const startPosition = hudPosition.clone();
-    startPosition.y -= 0.7; // Ajustar a y = 1.8 (2.5 - 0.7)
-    const hologramPosition = this.hologramBase.position.clone().add(new THREE.Vector3(0, 0.5, 0)); // Ajuste para centrarse en el bowl
+    startPosition.y -= 0.7;
+    const hologramPosition = this.hologramBase.position.clone().add(new THREE.Vector3(0, 0.5, 0));
   
-    points.push(startPosition); // Nuevo inicio más abajo
+    points.push(startPosition);
     points.push(hologramPosition);
   
     geometry.setFromPoints(points);
@@ -582,30 +626,29 @@ export default class World {
     this.connectionLine = new THREE.Line(geometry, material);
     this.scene.add(this.connectionLine);
   
-    // Animar la línea (hacerla parpadear durante más tiempo)
     gsap.to(material, {
       opacity: 0.2,
       duration: 1,
       yoyo: true,
-      repeat: 5 // Repetir más veces para que dure 6 segundos
+      repeat: 5
     });
   
-    // Añadir partículas
     for (let i = 0; i < 5; i++) {
       const particle = new THREE.Mesh(
         new THREE.SphereGeometry(0.01, 8, 8),
         new THREE.MeshBasicMaterial({ color: 0x00ffff, transparent: true, blending: THREE.AdditiveBlending })
       );
-      particle.position.lerpVectors(startPosition, hologramPosition, i / 5); // Usar el nuevo inicio
+      particle.position.lerpVectors(startPosition, hologramPosition, i / 5);
       this.scene.add(particle);
       gsap.to(particle.position, {
         y: particle.position.y + 0.2,
-        duration: 4, // Duración extendida a 6 segundos
+        duration: 4,
         onComplete: () => this.scene.remove(particle)
       });
     }
   }
 
+  // Manejo de clics en los botones del HUD
   handleHUDClick(uv, hudMesh) {
     const canvasWidth = hudMesh.material.map.image.width;
     const canvasHeight = hudMesh.material.map.image.height;
@@ -624,6 +667,7 @@ export default class World {
     }
   }
 
+  // Manejo de clics en elementos del ramen con animaciones y efectos (sin burbujas)
   handleRamenElementClick(mesh) {
     const clickSound = document.getElementById('click-sound');
     if (clickSound) {
@@ -640,17 +684,15 @@ export default class World {
       repeat: 1
     });
 
-    if (mesh.name === 'Ramen_Black_0') {
-      this.createBubbleEffect(mesh.position);
-    } else if (mesh.name === 'Fideo_Black_0') {
+    // Eliminar efectos de burbujas y otros no implementados
+    if (mesh.name === 'Fideo_Black_0') {
       this.createNoodleTwistEffect(mesh);
     } else if (mesh.name.includes('Cone')) {
       this.createChopstickSpinEffect(mesh);
     }
   }
 
-
-
+  // Animación de giro para los fideos
   createNoodleTwistEffect(noodles) {
     const originalRotation = noodles.rotation.clone();
 
@@ -677,6 +719,7 @@ export default class World {
     });
   }
 
+  // Animación de giro para los palillos con luz temporal
   createChopstickSpinEffect(chopstick) {
     const spinAngle = chopstick.name === 'Cone_1_Black_0' ? Math.PI * 2 : -Math.PI * 2;
 
@@ -697,6 +740,7 @@ export default class World {
     });
   }
 
+  // Creación del plano del HUD en la escena
   createHUDPlane() {
     const geo = new THREE.PlaneGeometry(2.4, 0.75);
     const mat = new THREE.MeshBasicMaterial({
@@ -705,13 +749,15 @@ export default class World {
       side: THREE.DoubleSide,
       depthWrite: false,
       blending: THREE.AdditiveBlending,
-      opacity: 0.9 // Opacidad inicial
+      opacity: 0.9
     });
     this.hudMesh = new THREE.Mesh(geo, mat);
     this.hudMesh.position.set(0, 2.5, 0);
     this.scene.add(this.hudMesh);
     console.log('Posición de hudMesh:', this.hudMesh.position);
   }
+
+  // Añadir el holograma con su base, partes y luz dinámica
   addHologramMesh() {
     const glb = this.experience.resources.items.hologramBowl?.scene;
     if (!glb) return;
@@ -722,19 +768,22 @@ export default class World {
     glb.traverse(c => {
       if (c.isMesh) {
         const m = new THREE.Mesh(c.geometry.clone(), createHologramMaterial());
-        m.userData.isHologram = true; // Marcamos para detección de clics
+        m.userData.isHologram = true;
         group.add(m);
         this.hologramParts.push(m);
       }
     });
     this.hologramBase = group;
     this.scene.add(group);
+  
+    this.hologramLight = new THREE.PointLight(0x00ffff, 2, 10);
+    this.hologramLight.position.set(0, 5, 0);
+    this.scene.add(this.hologramLight);
   }
 
-
+  // Animación de movimiento de la cámara hacia el menú
   moveCameraToMenu() {
-    // Calcular la posición promedio de los objetos del letrero
-    const signObjects = [this.woodSign, this.woodPole1, this.woodPole2].filter(Boolean);
+    const signObjects = [this.floorSign].filter(Boolean);
     if (signObjects.length === 0) {
       console.warn('No se encontraron objetos del letrero para posicionar el menú');
       return;
@@ -743,14 +792,13 @@ export default class World {
     let averagePosition = new THREE.Vector3();
     signObjects.forEach(obj => {
       const worldPos = new THREE.Vector3();
-      obj.getWorldPosition(worldPos); // Usamos getWorldPosition para obtener la posición global
+      obj.getWorldPosition(worldPos);
       averagePosition.add(worldPos);
     });
     averagePosition.divideScalar(signObjects.length);
 
-    // Ajustar la posición de la cámara para mirar hacia el letrero
-    const targetPos = averagePosition.clone().add(new THREE.Vector3(0, 2, -5)); // Cámara 5 unidades atrás y 1 arriba
-    const targetLookAt = averagePosition.clone().add(new THREE.Vector3(0, 1, 0)); // Mirar al centro del letrero
+    const targetPos = averagePosition.clone().add(new THREE.Vector3(0, 2, -5));
+    const targetLookAt = averagePosition.clone().add(new THREE.Vector3(0, 1, 0));
 
     this.animateMoveHUD(
       this.menuHUDMesh,
@@ -759,6 +807,7 @@ export default class World {
     );
   }
 
+  // Animación de movimiento de la cámara hacia los ingredientes
   moveCameraToIngredients() {
     const ramenWorldPos = new THREE.Vector3();
     this.ramenBowlNode.getWorldPosition(ramenWorldPos);
@@ -770,6 +819,7 @@ export default class World {
     this.animateMoveHUD(this.ingredientHUDMesh, targetPos, targetLookAt, ramenWorldPos);
   }
 
+  // Animación general de movimiento del HUD y la cámara
   animateMoveHUD(hudMesh, targetPos, targetLookAt, ramenPos = null) {
     const camera = this.experience.camera.instance;
     const controls = this.experience.camera.controls;
@@ -783,7 +833,7 @@ export default class World {
     const initialPos = camera.position.clone();
     const initialLook = controls.target.clone();
     let startTime = null;
-    const duration = 1;
+    const duration = 2;
 
     const animate = (time) => {
       if (!startTime) startTime = time;
@@ -817,14 +867,19 @@ export default class World {
     requestAnimationFrame(animate);
   }
 
+  // Manejo del clic en el botón de retroceso
   onBackButtonClick() {
     const clickSound = document.getElementById('click-sound');
     const transitionSound = document.getElementById('transition-sound');
     clickSound?.play();
     transitionSound?.play();
-
-    const fadeOutDuration = 0.8;
-
+  
+    const fadeOutDuration = 0.8; // Desvanecimiento del HUD
+  
+    // Determinar qué HUD está activo para ajustar la duración de la cámara
+    const isIngredientHUD = this.ingredientHUDMesh.visible;
+    const cameraAnimationDuration = isIngredientHUD ? 2 : 1.5; // 3 segundos para ingredientHUD, 1 para menuHUD
+  
     [this.menuHUDMesh, this.ingredientHUDMesh].forEach(hud => {
       if (hud.visible) {
         gsap.to(hud.material, {
@@ -837,11 +892,11 @@ export default class World {
         });
       }
     });
-
+  
     this.experience.camera.animateToPosition(
       new THREE.Vector3(10, 1, -10),
       new THREE.Vector3(0, 1.2, 0),
-      2,
+      cameraAnimationDuration, // Usamos la duración específica según el HUD
       () => {
         this.experience.camera.controls.enabled = true;
         this.experience.camera.controls.target.set(0, 1.2, 0);
@@ -850,11 +905,12 @@ export default class World {
     );
   }
 
+  // Actualización continua de la escena, manejando animaciones y efectos
   update() {
     const elapsed = this.hologramClock.getElapsedTime();
     const time = this.clock.getElapsedTime();
   
-    updateRamenEffects(this.scene, this.modelGroup, time);
+    updateRamenEffects(this.scene, this.modelGroup, time); // Actualización de efectos de ramen
   
     this.modelGroup.traverse(obj => {
       const ud = obj.userData;
@@ -892,14 +948,45 @@ export default class World {
   
     if (this.hud?.update) this.hud.update(elapsed);
     if (this.hudMesh) this.hudMesh.lookAt(this.experience.camera.instance.position);
-    if (this.hologramBase) this.hologramBase.rotation.z += this.hologramRotationSpeed; // Usar la velocidad dinámica
+    if (this.hologramBase) this.hologramBase.rotation.z += this.hologramRotationSpeed;
+  
+    // Actualización dinámica del color y luz del holograma
+    if (this.hologramParts.length > 0) {
+      const baseColor = new THREE.Color(
+        0.2 + 0.5 * Math.sin(elapsed + 2.0),
+        0.6 + 0.4 * Math.sin(elapsed + 2.0 + 2.0),
+        1.0
+      );
+  
+      this.hologramParts.forEach(p => {
+        if (p.material.uniforms?.uColor) {
+          p.material.uniforms.uColor.value.copy(baseColor);
+        }
+      });
+  
+      if (this.hologramLight) {
+        this.hologramLight.color.copy(baseColor);
+      }
+    }
+  
+    // Movimiento circular de la luz del holograma
+    if (this.hologramLight) {
+      const angle = this.hologramBase.rotation.z;
+      const radius = 0.2;
+      this.hologramLight.position.x = Math.sin(angle) * radius;
+      this.hologramLight.position.z = Math.cos(angle) * radius;
+      this.hologramLight.position.y = 1.4;
+    }
+  
     this.hologramParts.forEach(p => {
       if (p.material.uniforms?.uTime) p.material.uniforms.uTime.value = elapsed;
       if (p.material.uniforms?.uOpacity) p.material.uniforms.uOpacity.value = 0.9 + 0.1 * Math.sin(elapsed * 0.5);
     });
     if (this.menuHUDMesh?.visible) this.menuHUDMesh.lookAt(this.experience.camera.instance.position);
     if (this.ingredientHUDMesh?.visible) this.ingredientHUDMesh.lookAt(this.experience.camera.instance.position);
-    if (this.mano) this.mano.rotation.z = Math.sin(elapsed * 2) * 0.8;
+    if (this.mano && !this.manoGirando) {
+      this.mano.rotation.z = Math.sin(elapsed * 2) * 0.8;
+    }
     if (this.ingredientHUDMesh?.visible && this.ingredientHUDMesh.updateCanvas) this.ingredientHUDMesh.updateCanvas();
   
     this.scene.traverse(obj => {

@@ -19,7 +19,7 @@ export default function createIngredientHUD(backButtonArea) {
     depthWrite: false
   });
 
-  const geometry = new THREE.PlaneGeometry(3.2, 1.8); // más panorámico
+  const geometry = new THREE.PlaneGeometry(3.2, 1.8); // Proporción 16:9 (3.2 / 1.8 = 1.777)
   const mesh = new THREE.Mesh(geometry, material);
   mesh.renderOrder = 999;
   material.depthTest = false;
@@ -84,8 +84,6 @@ export default function createIngredientHUD(backButtonArea) {
       y += line ? lineHeight : lineHeight / 2;
     });
 
-    
-
     // Botón "Volver"
     ctx.font = 'bold 30px Orbitron';
     ctx.fillStyle = '#00ffff';
@@ -101,12 +99,17 @@ export default function createIngredientHUD(backButtonArea) {
     ctx.fillStyle = 'rgba(0, 255, 255, 0.08)';
     ctx.fillRect(width * 0.5, 0, width * 0.5, height);
 
-    // ✨ Ahora el video se dibuja respetando proporción más rectangular
+    // Ajustar el video para proporción 16:9
     if (video.readyState >= video.HAVE_CURRENT_DATA) {
-      const videoW = width * 0.4;
-      const videoH = height * 0.6;
-      const videoX = width * 0.55;
-      const videoY = height * 0.2;
+      const maxVideoWidth = width * 0.4; // Ancho máximo (40% del canvas)
+      const videoAspectRatio = 16 / 9; // Proporción 16:9
+      const videoW = maxVideoWidth; // Usamos el ancho máximo
+      const videoH = videoW / videoAspectRatio; // Calculamos la altura para mantener 16:9
+
+      // Centrar el video en el área disponible
+      const videoX = width * 0.5 + (width * 0.5 - videoW) / 2; // Centrado horizontalmente en la mitad derecha
+      const videoY = (height - videoH) / 2; // Centrado verticalmente
+
       ctx.drawImage(video, videoX, videoY, videoW, videoH);
     }
 
